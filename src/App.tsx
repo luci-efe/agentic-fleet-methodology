@@ -14,7 +14,7 @@ const tools: Tool[] = [
   { name: 'Hindsight', role: 'Shared memory server: fr-fleet for the fleet, fr-odin private to the orchestrator.', href: 'https://github.com/vectorize-io/hindsight' },
   { name: 'Cua', role: 'Cloud computer-use environment for persistent browser verification.', href: 'https://cua.ai/' },
   { name: 'Claude Code', role: 'Anthropic harness agent running inside a Herdr pane.', href: 'https://docs.anthropic.com/en/docs/claude-code/getting-started' },
-  { name: 'Codex', role: 'OpenAI harness agent running beside Claude and omp workers.', href: 'https://help.openai.com/en/articles/11096431' },
+  { name: 'Codex', role: 'OpenAI harness agent running beside Claude and omp workers.', href: 'https://github.com/openai/codex' },
 ]
 
 const beats = [
@@ -41,10 +41,11 @@ npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 # Local machine also verified pi installed via bun global:
 bun add -g @earendil-works/pi-coding-agent`
 
-const odinInstall = `# Odin is a pi overlay, not an .omp change
-git clone https://github.com/Agentic-Engineering-Agency/odin-pi ~/.pi/odin
-mkdir -p ~/.pi/agent
-cp -R ~/.pi/odin/.pi/* ~/.pi/agent/`
+const odinInstall = `# Odin is a pi overlay: a theme + extensions layered onto stock pi
+git clone https://github.com/luci-efe/odin ~/.pi/odin
+mkdir -p ~/.pi/agent/themes ~/.pi/agent/extensions
+cp ~/.pi/odin/theme/odin.json ~/.pi/agent/themes/
+cp ~/.pi/odin/extensions/*.ts ~/.pi/agent/extensions/`
 
 const harnessInstall = `# Claude Code: current native installer
 curl -fsSL https://claude.ai/install.sh | bash
