@@ -45,7 +45,9 @@ const odinInstall = `# Odin is a pi overlay: a theme + extensions layered onto s
 git clone https://github.com/luci-efe/odin ~/.pi/odin
 mkdir -p ~/.pi/agent/themes ~/.pi/agent/extensions
 cp ~/.pi/odin/theme/odin.json ~/.pi/agent/themes/
-cp ~/.pi/odin/extensions/*.ts ~/.pi/agent/extensions/`
+cp ~/.pi/odin/extensions/*.ts ~/.pi/agent/extensions/
+
+# If pi is already open, run /reload or restart pi to see OmniRoute.`
 
 const harnessInstall = `# Claude Code: current native installer
 curl -fsSL https://claude.ai/install.sh | bash
