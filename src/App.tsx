@@ -1,251 +1,169 @@
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowUpRight, Check, CirclePause, CirclePlay, Eye, GitBranch, MessageSquareText, RotateCcw, ShieldCheck, Sparkles, TerminalSquare } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import './App.css'
 
-type Tool = {
-  name: string
-  role: string
-  href: string
-}
+type AgentState = 'queued' | 'working' | 'review' | 'done'
+type Agent = { id: string; harness: string; role: string; model: string; state: AgentState; note: string; tab: string }
 
-type Step = {
-  title: string
-  text: string
-}
-
-const tools: Tool[] = [
-  { name: 'Herdr', role: 'The durable terminal substrate: persistent workspaces, tabs, panes, labels, status, and local socket control.', href: 'https://herdr.dev/' },
-  { name: 'pi / Odin', role: 'The visible operator console: pi plus an Odin theme, status overlay, worktree guard, and OmniRoute provider.', href: 'https://github.com/luci-efe/odin' },
-  { name: 'OmniRoute', role: 'The OpenAI-compatible model bus that lets local agents use stable model aliases instead of one-off vendor wiring.', href: 'https://omniroute.agenticengineering.lat' },
-  { name: 'omp + pi-seshat', role: 'The engineering harness and Seshat/Ghola workflow: spec, test, implement, verify, review.', href: 'https://github.com/Agentic-Engineering-Agency/pi-seshat' },
-  { name: 'Hindsight', role: 'Shared fleet memory so agents can carry context across sessions instead of starting cold every time.', href: 'https://github.com/vectorize-io/hindsight' },
-  { name: 'Cua', role: 'Real browser and computer-use verification for UI work that cannot be proven from text alone.', href: 'https://cua.ai/' },
-  { name: 'Claude Code', role: 'A high-context coding harness running as one visible Herdr pane in the fleet.', href: 'https://docs.anthropic.com/en/docs/claude-code/getting-started' },
-  { name: 'Codex', role: 'A second coding harness beside Claude, Hermes, omp, and pi for parallel implementation and review.', href: 'https://github.com/openai/codex' },
+const timeline: Agent[][] = [
+  [
+    { id: 'raven-01', harness: 'Claude Code', role: 'Explore', model: 'Opus', state: 'working', note: 'Mapping architecture and hidden constraints', tab: 'Research' },
+    { id: 'raven-02', harness: 'Codex', role: 'Build', model: 'GPT-5.6', state: 'queued', note: 'Waiting for the architecture map', tab: 'Build' },
+    { id: 'raven-03', harness: 'Hermes', role: 'Review', model: 'Luci', state: 'queued', note: 'Waiting for an implementation diff', tab: 'Review' },
+    { id: 'raven-04', harness: 'OMP', role: 'Verify', model: 'Seshat', state: 'queued', note: 'Waiting for runnable evidence', tab: 'Verify' },
+  ],
+  [
+    { id: 'raven-01', harness: 'Claude Code', role: 'Explore', model: 'Opus', state: 'done', note: 'Architecture map delivered with 3 risks', tab: 'Research' },
+    { id: 'raven-02', harness: 'Codex', role: 'Build', model: 'GPT-5.6', state: 'working', note: 'Implementing in feat/mission-raven-02', tab: 'Build' },
+    { id: 'raven-03', harness: 'Hermes', role: 'Review', model: 'Luci', state: 'queued', note: 'Reading the research pane directly', tab: 'Review' },
+    { id: 'raven-04', harness: 'OMP', role: 'Verify', model: 'Seshat', state: 'queued', note: 'Test plan prepared', tab: 'Verify' },
+  ],
+  [
+    { id: 'raven-01', harness: 'Claude Code', role: 'Explore', model: 'Opus', state: 'done', note: 'Answering a direct question from Hermes', tab: 'Research' },
+    { id: 'raven-02', harness: 'Codex', role: 'Build', model: 'GPT-5.6', state: 'review', note: 'Diff ready in an isolated worktree', tab: 'Build' },
+    { id: 'raven-03', harness: 'Hermes', role: 'Review', model: 'Luci', state: 'working', note: 'Reviewing the diff and messaging Codex', tab: 'Review' },
+    { id: 'raven-04', harness: 'OMP', role: 'Verify', model: 'Seshat', state: 'working', note: 'Running tests and browser verification', tab: 'Verify' },
+  ],
+  [
+    { id: 'raven-01', harness: 'Claude Code', role: 'Explore', model: 'Opus', state: 'done', note: 'Architecture evidence retained', tab: 'Research' },
+    { id: 'raven-02', harness: 'Codex', role: 'Build', model: 'GPT-5.6', state: 'done', note: 'Patch revised after peer review', tab: 'Build' },
+    { id: 'raven-03', harness: 'Hermes', role: 'Review', model: 'Luci', state: 'done', note: 'Review approved with evidence', tab: 'Review' },
+    { id: 'raven-04', harness: 'OMP', role: 'Verify', model: 'Seshat', state: 'done', note: 'Tests and browser checks passed', tab: 'Verify' },
+  ],
 ]
 
-const principles: Step[] = [
-  { title: 'Visible agents beat invisible jobs', text: 'Every worker lives in a pane you can inspect, interrupt, message, or recover. No mystery daemon eating your task.' },
-  { title: 'The terminal is the fleet UI', text: 'Herdr turns terminals into durable, addressable infrastructure: workspace:, tab:, pane:, labels, status, and scrollback.' },
-  { title: 'One orchestrator, many harnesses', text: 'Odin/pi routes work to Claude Code, Codex, Hermes, omp, and local tools without pretending one model is always enough.' },
-  { title: 'Verification is part of the loop', text: 'The fleet does not stop at generated code. It runs checks, browser probes, and review loops before calling work complete.' },
+const laws = [
+  ['01', 'Observable by default', 'Every agent has an address, a visible terminal, readable output, and a status. If you cannot inspect an agent, you cannot improve it.'],
+  ['02', 'Autonomous by design', 'Agents coordinate directly and keep moving without human copy-paste. They escalate only real questions, decisions, credentials, and blockers.'],
+  ['03', 'Evidence before confidence', 'Code is not complete because an agent says so. Diffs, tests, reviews, browser state, and artifacts are the definition of done.'],
+  ['04', 'Context must continue', 'Memory, durable sessions, and automatic handoff preserve intent. Context limits become a relay point—not a cliff.'],
+  ['05', 'Plural intelligence', 'Harnesses and models are interchangeable specialists. The system routes work by capability instead of pledging allegiance to one vendor.'],
+  ['06', 'Human sovereignty', 'Autonomy serves judgment. Humans retain control of direction, destructive actions, publishing, credentials, and final acceptance.'],
 ]
 
-const installSteps: Step[] = [
-  { title: 'Install Herdr', text: 'Use the native installer or Homebrew. Do not use the npm package; that name is a placeholder.' },
-  { title: 'Install pi and Odin', text: 'Install stock pi, then copy Odin theme and extension files into ~/.pi/agent so every project gets the same console.' },
-  { title: 'Wire OmniRoute', text: 'Put the OmniRoute provider in ~/.pi/agent/extensions and expose OMNIROUTE_API_KEY from your shell or command-backed provider config.' },
-  { title: 'Add harnesses', text: 'Install Claude Code, Codex, Hermes, and omp. Launch them from Herdr panes, not background scripts.' },
+const loop = [
+  ['Frame', 'Define the mission, constraints, ownership, and proof required.'],
+  ['Decompose', 'Turn the mission into bounded roles and dependency-aware work.'],
+  ['Dispatch', 'Launch specialists with isolated worktrees and full operational context.'],
+  ['Collaborate', 'Let workers read and message each other without routing every thought through a manager.'],
+  ['Verify', 'Run tests, inspect diffs, review in Zed, and prove interfaces in a real browser.'],
+  ['Integrate', 'Accept evidence, merge deliberately, and retain durable memory for the next mission.'],
 ]
 
-const usageSteps: Step[] = [
-  { title: 'Create a mission workspace', text: 'Name the workspace after the mission so every pane, transcript, and review belongs to a visible operating room.' },
-  { title: 'Split panes by role', text: 'Use labels like pi-code, codex, hermes, omp, and claude-code. The label is the operator map.' },
-  { title: 'Send small, inspectable prompts', text: 'Use herdr pane send-text, send-keys, run, read, and wait output or agent-status. Keep the control plane boring.' },
-  { title: 'Review in the open', text: 'Agents can read each other’s panes, reuse memory, and hand back evidence instead of only final prose.' },
+const stack = [
+  ['Odin', 'Mission control', 'Plans, launches, monitors, recovers, and hands sessions forward.'],
+  ['Herdr', 'Visible substrate', 'Persistent workspaces, addressable panes, direct messaging, and reattachment.'],
+  ['OmniRoute', 'Model bus', 'Capability-based routing across providers and subscriptions.'],
+  ['Hindsight', 'Durable memory', 'Shared verified facts without dragging entire transcripts forward.'],
+  ['Cua', 'Interface evidence', 'Persistent browsers, recordings, screenshots, and real DOM verification.'],
+  ['Zed', 'Human review surface', 'Open any worker worktree directly for fast diff and code review.'],
 ]
 
-const beats: Step[] = [
-  { title: 'Hook', text: 'Close a terminal mid-task, then reattach. The agents are still there because Herdr owns the panes.' },
-  { title: 'Stack Tour', text: 'Herdr persists the work, Odin/pi drives it, OmniRoute supplies models, Hindsight stores memory, Cua proves browser behavior.' },
-  { title: 'Live Demo 1', text: 'Create a workspace, split panes, launch the harnesses, and show each one responding in place.' },
-  { title: 'Live Demo 2', text: 'Ask Odin to dispatch implementation and review work across the visible fleet.' },
-  { title: 'Live Demo 3', text: 'Prove the output with a real check: command output, browser state, or reviewer evidence.' },
-]
-
-const herdrInstall = `# Linux/macOS script install
-curl -fsSL https://herdr.dev/install.sh | sh
-
-# Homebrew
-brew install herdr
-
-# Verify
-herdr --version`
-
-const piInstall = `# Official pi coding agent package
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
-
-# This Mac also uses bun global successfully
-bun add -g @earendil-works/pi-coding-agent
-
-# Verify global OmniRoute model discovery
-HOME=$HOME pi --list-models`
-
-const odinInstall = `# Odin is a pi overlay: theme + extensions layered onto stock pi
-git clone https://github.com/luci-efe/odin ~/.pi/odin
-mkdir -p ~/.pi/agent/themes ~/.pi/agent/extensions
-cp ~/.pi/odin/theme/odin.json ~/.pi/agent/themes/
-cp ~/.pi/odin/extensions/*.ts ~/.pi/agent/extensions/
-
-# If pi is already open, run /reload or restart pi to see OmniRoute.`
-
-const harnessInstall = `# Claude Code
-curl -fsSL https://claude.ai/install.sh | bash
-
-# Codex CLI
-npm install -g @openai/codex
-
-# Then verify your local harnesses
-claude --version
-codex --version
-hermes --version
-omp --version
-pi --version`
-
-const demoScript = `# Create a visible operating room
-herdr workspace create --cwd "$PWD" --label "fleet-demo" --no-focus
-
-# Herdr ids are colon-form: workspace: w1, tab: w1:t1, pane: w1:p1
-herdr pane split w1:p1 --direction right --ratio 0.5 --cwd "$PWD"
-herdr pane split w1:p1 --direction down --ratio 0.5 --cwd "$PWD"
-herdr pane rename w1:p1 pi-code
-herdr pane rename w1:p2 codex
-herdr pane rename w1:p3 hermes
-
-# Launch harnesses in panes
-herdr pane run w1:p1 "HOME=$HOME pi --provider omniroute --model auto/smart"
-herdr pane run w1:p2 "codex"
-herdr pane run w1:p3 "hermes --cli"
-
-# Message and inspect agents
-herdr pane send-text w1:p1 "Read the repo and propose the first check."
-herdr pane send-keys w1:p1 enter
-herdr pane read w1:p1 --source visible --format text
-herdr wait output w1:p1 --match "check" --timeout 120000
-herdr wait agent-status w1:p2 --status idle --timeout 300000`
-
-function Card({ tool }: { tool: Tool }) {
+function FleetSimulator() {
+  const [frame, setFrame] = useState(0)
+  const [playing, setPlaying] = useState(true)
+  const [selected, setSelected] = useState('raven-02')
+  useEffect(() => {
+    if (!playing) return
+    const timer = window.setInterval(() => setFrame((value) => (value + 1) % timeline.length), 2400)
+    return () => window.clearInterval(timer)
+  }, [playing])
+  const agents = timeline[frame]
+  const active = useMemo(() => agents.find((agent) => agent.id === selected) ?? agents[0], [agents, selected])
   return (
-    <a className="card" href={tool.href} target="_blank" rel="noreferrer">
-      <span>{tool.name}</span>
-      <p>{tool.role}</p>
-    </a>
-  )
-}
-
-function StepCard({ step, index }: { step: Step; index: number }) {
-  return (
-    <article className="step-card">
-      <span className="step-number">{String(index + 1).padStart(2, '0')}</span>
-      <h3>{step.title}</h3>
-      <p>{step.text}</p>
-    </article>
-  )
-}
-
-function CodeBlock({ title, code }: { title: string; code: string }) {
-  return (
-    <figure className="code-card">
-      <figcaption>{title}</figcaption>
-      <pre><code>{code}</code></pre>
-    </figure>
+    <Card className="fleet-console" id="command-center">
+      <CardHeader className="console-header">
+        <div>
+          <Badge variant="outline"><span className="live-dot" /> deterministic simulation</Badge>
+          <CardTitle>Mission: prove the change</CardTitle>
+          <CardDescription>workspace / odin-methodology · 4 workers · phase {frame + 1}/4</CardDescription>
+        </div>
+        <div className="console-actions">
+          <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon" onClick={() => setPlaying(!playing)} aria-label={playing ? 'Pause simulation' : 'Play simulation'} />}>
+            {playing ? <CirclePause /> : <CirclePlay />}
+          </TooltipTrigger><TooltipContent>{playing ? 'Pause' : 'Play'}</TooltipContent></Tooltip>
+          <Button variant="ghost" size="icon" onClick={() => setFrame(0)} aria-label="Reset simulation"><RotateCcw /></Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="agent-grid">
+          {agents.map((agent) => <button className="agent-row" data-state={agent.state} data-selected={selected === agent.id} key={agent.id} onClick={() => setSelected(agent.id)}>
+            <span className="agent-mark">{agent.id.slice(-2)}</span>
+            <span><strong>{agent.harness}</strong><small>{agent.role} · {agent.model}</small></span>
+            <Badge variant={agent.state === 'done' ? 'default' : 'secondary'}>{agent.state}</Badge>
+          </button>)}
+        </div>
+        <div className="activity-line"><span className="prompt">›</span><div><small>{active.id} / {active.tab}</small><p>{active.note}</p></div></div>
+        <div className="console-footer"><span>direct channel open</span><span>worktrees isolated</span><span>evidence retained</span></div>
+      </CardContent>
+    </Card>
   )
 }
 
 function App() {
-  return (
+  return <TooltipProvider>
     <main>
-      <section className="hero-section" id="the-idea">
+      <nav className="site-nav" aria-label="Primary navigation">
+        <a className="wordmark" href="#top"><span>AE</span> Agentic Engineering</a>
+        <div className="nav-links"><a href="#principles">Principles</a><a href="#operating-model">Operating model</a><a href="#stack">System</a></div>
+        <Button render={<a href="https://github.com/luci-efe/odin" target="_blank" rel="noreferrer" />}>Explore Odin <ArrowUpRight data-icon="inline-end" /></Button>
+      </nav>
+
+      <section className="hero" id="top">
+        <div className="strands" data-fallback="#07101c" aria-hidden="true" />
+        <div className="hero-scrim" />
         <div className="hero-copy">
-          <p className="eyebrow">Agentic fleet methodology</p>
-          <h1>Run AI agents like an engineering team you can see.</h1>
-          <p className="lede">
-            A practical operating system for multi-agent software work: durable terminals, visible harnesses, shared memory, model routing, and verification loops that developers can trust.
-          </p>
-          <div className="hero-actions">
-            <a href="#install">Install the stack</a>
-            <a href="#usage">Run a fleet</a>
-          </div>
+          <p className="kicker">A point of view by Fernando Ramos · Agentic Engineering</p>
+          <h1>Engineering changes when agents can see <em>each other.</em></h1>
+          <p className="hero-lede">A methodology for building with autonomous AI fleets without surrendering visibility, judgment, or proof.</p>
+          <div className="hero-actions"><Button size="lg" render={<a href="#principles" />}>Adopt the methodology <ArrowUpRight data-icon="inline-end" /></Button><Button size="lg" variant="outline" render={<a href="#command-center" />}>Enter mission control</Button></div>
+          <div className="hero-proof"><span><Eye /> visible work</span><span><MessageSquareText /> direct collaboration</span><span><ShieldCheck /> verified outcomes</span></div>
         </div>
-        <aside className="hero-panel" aria-label="Fleet status snapshot">
-          <span>fleet-readiness</span>
-          <strong>4/5 agents live</strong>
-          <p>Pi, Codex, Hermes, and omp responded in visible Herdr panes. Claude Code was previously verified and is currently usage-limited.</p>
-        </aside>
+        <FleetSimulator />
       </section>
 
-      <section id="purpose" className="split-section">
-        <div>
-          <p className="eyebrow">The Idea</p>
-          <h2>Agents should be inspectable, recoverable, and reviewable.</h2>
-        </div>
-        <div className="rich-copy">
-          <p>
-            Most agent demos hide the real work behind a spinner. This methodology keeps the work visible. Herdr owns durable panes. Odin/pi coordinates the mission. Harness agents do focused work. Hindsight carries memory. Cua checks real interfaces. OmniRoute keeps model selection flexible.
-          </p>
-          <p>
-            The result is not a chatbot. It is an operating pattern for developers who want parallel AI teammates without losing control of the terminal, the repo, or the evidence trail.
-          </p>
-        </div>
+      <section className="thesis section-shell">
+        <p className="section-index">The thesis</p>
+        <div><h2>Stop operating agents as chat windows.</h2><p className="display-copy">The human should not be a clipboard between isolated intelligences. Build an environment where agents can work, coordinate, recover, and preserve context—while every consequential action remains inspectable.</p></div>
       </section>
 
-      <section id="architecture">
-        <p className="eyebrow">Control plane</p>
-        <h2>Architecture</h2>
-        <div className="diagram" aria-label="Architecture diagram">
-          <div className="node lead">Odin / pi<br /><small>orchestrator + operator console</small></div>
-          <div className="bus">Herdr socket API<br /><small>workspace: w1 · tab: w1:t1 · pane: w1:p1</small></div>
-          <div className="grid">
-            <div className="node">Claude Code</div>
-            <div className="node">Codex</div>
-            <div className="node">Hermes</div>
-            <div className="node">omp</div>
-          </div>
-          <div className="services">
-            <div>OmniRoute<br /><small>model routing</small></div>
-            <div>Hindsight<br /><small>memory</small></div>
-            <div>Cua<br /><small>browser checks</small></div>
-          </div>
-        </div>
+      <section className="principles section-shell" id="principles">
+        <header className="section-heading"><p className="section-index">Six operating laws</p><h2>Autonomy you can<br />actually trust.</h2></header>
+        <div className="law-list">{laws.map(([number, title, text]) => <article className="law" key={number}><span>{number}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
       </section>
 
-      <section id="principles">
-        <p className="eyebrow">Operating principles</p>
-        <h2>What makes the fleet different</h2>
-        <div className="step-grid">{principles.map((step, index) => <StepCard key={step.title} step={step} index={index} />)}</div>
+      <section className="operating section-shell" id="operating-model">
+        <header className="section-heading"><p className="section-index">The operating model</p><h2>From intent to evidence.</h2><p>Autonomy is not an infinite loop. It is a legible system with handoffs, boundaries, and proof.</p></header>
+        <div className="loop-rail">{loop.map(([title, text], index) => <article key={title}><span>{String(index + 1).padStart(2, '0')}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
       </section>
 
-      <section id="stack">
-        <p className="eyebrow">Tools</p>
-        <h2>The Stack</h2>
-        <div className="cards">{tools.map((tool) => <Card key={tool.name} tool={tool} />)}</div>
+      <section className="review section-shell">
+        <div className="review-copy"><p className="section-index">Human review</p><h2>The editor is the truth surface.</h2><p>Agents can move quickly; acceptance should remain deliberate. Every worker owns an isolated branch and worktree. Odin can open that exact worktree in Zed, where the human reviews structure, diffs, tests, and consequences—not a summary of them.</p><div className="review-command"><TerminalSquare /><code>/fleet-review raven-02</code><span>opens Zed</span></div></div>
+        <div className="diff-window" aria-label="Illustrative code review diff"><header><span className="traffic">● ● ●</span><span>feat/mission-raven-02 · Zed</span></header><pre><span className="muted">@@ orchestration/recovery.ts</span>{'\n'}<span className="minus">- restart(worker)</span>{'\n'}<span className="plus">+ await verifyReplacement(worker)</span>{'\n'}<span className="plus">+ await preserveEvidence(worker)</span>{'\n'}<span className="plus">+ restart(worker, {'{'} rollback: true {'}'})</span></pre><footer><Check /> reviewed by human · tests attached</footer></div>
       </section>
 
-      <section id="install">
-        <p className="eyebrow">Install & Try It</p>
-        <h2>Build the local agent cockpit</h2>
-        <p className="section-copy">Start with Herdr and pi, then add Odin, OmniRoute, and the harnesses you want to run. The canonical Herdr protocol lives in the <code>herdr-protocol</code> skill; this page keeps the quick-start commands close.</p>
-        <div className="step-grid compact">{installSteps.map((step, index) => <StepCard key={step.title} step={step} index={index} />)}</div>
-        <div className="code-grid">
-          <CodeBlock title="Herdr 0.7.1 install" code={herdrInstall} />
-          <CodeBlock title="pi install" code={piInstall} />
-          <CodeBlock title="Odin overlay" code={odinInstall} />
-          <CodeBlock title="Harness agents" code={harnessInstall} />
-        </div>
+      <section className="system section-shell" id="stack">
+        <header className="section-heading"><p className="section-index">The system</p><h2>One control plane.<br />Many intelligences.</h2></header>
+        <Tabs defaultValue="architecture" className="system-tabs">
+          <TabsList><TabsTrigger value="architecture">Architecture</TabsTrigger><TabsTrigger value="boundaries">Human boundaries</TabsTrigger><TabsTrigger value="continuity">Continuity</TabsTrigger></TabsList>
+          <TabsContent value="architecture"><div className="stack-grid">{stack.map(([name, role, text]) => <Card key={name}><CardHeader><Badge variant="outline">{role}</Badge><CardTitle>{name}</CardTitle></CardHeader><CardContent><p>{text}</p></CardContent></Card>)}</div></TabsContent>
+          <TabsContent value="boundaries"><div className="boundary-grid"><article><ShieldCheck /><h3>Agents proceed</h3><p>Read, edit, test, review, message peers, recover sessions, and gather evidence inside their owned scope.</p></article><article><MessageSquareText /><h3>Humans decide</h3><p>Credentials, destructive operations, publication, global configuration, ambiguous product trade-offs, and final acceptance.</p></article></div></TabsContent>
+          <TabsContent value="continuity"><div className="continuity"><GitBranch /><div><h3>A mission should outlive a context window.</h3><p>At 80% context, Odin creates an evidence-rich handoff and continues in a replacement session. Durable terminals and verified memory keep the fleet from restarting intellectually every time a model fills its context.</p></div></div></TabsContent>
+        </Tabs>
       </section>
 
-      <section id="usage">
-        <p className="eyebrow">Usage</p>
-        <h2>Run a visible fleet</h2>
-        <p className="section-copy">The workflow is intentionally simple: create a room, label the workers, launch harnesses, send prompts, read evidence, and wait for status. No hidden scheduler required.</p>
-        <div className="step-grid compact">{usageSteps.map((step, index) => <StepCard key={step.title} step={step} index={index} />)}</div>
-        <div className="code-grid single">
-          <CodeBlock title="Minimal fleet demo" code={demoScript} />
-        </div>
-      </section>
+      <section className="contrast section-shell"><p className="section-index">Not vibe coding</p><div className="contrast-grid"><article><span>Vibe coding asks</span><h3>“Did the agent produce something?”</h3></article><article><span>Agentic engineering asks</span><h3>“Can we inspect, reproduce, verify, and improve how it was produced?”</h3></article></div></section>
 
-      <section id="beats">
-        <p className="eyebrow">Story</p>
-        <h2>The Demo Beats</h2>
-        <ol className="timeline">
-          {beats.map((step) => (
-            <li key={step.title}>
-              <strong>{step.title}</strong>
-              <p>{step.text}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <section className="cta section-shell"><Sparkles /><p className="section-index">Start with one mission</p><h2>Make the work visible.<br />Then scale the intelligence.</h2><p>Adopt the methodology, inspect the open system behind it, and build fleets that earn autonomy through evidence.</p><div><Button size="lg" render={<a href="https://github.com/luci-efe/odin" target="_blank" rel="noreferrer" />}>Build with Odin <ArrowUpRight data-icon="inline-end" /></Button><Button size="lg" variant="outline" render={<a href="mailto:hello@fernandoramos.work" />}>Talk to Fernando</Button></div></section>
+
+      <footer><div className="wordmark"><span>AE</span> Agentic Engineering</div><p>Designed and engineered by Fernando Ramos.</p><div><a href="https://github.com/luci-efe/odin">Odin</a><a href="https://github.com/Agentic-Engineering-Agency/pi-seshat">Seshat</a><a href="https://github.com/nexu-io/motion-anything">Motion credit</a></div></footer>
     </main>
-  )
+  </TooltipProvider>
 }
 
 export default App

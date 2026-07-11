@@ -1,27 +1,46 @@
 # Agentic Fleet Methodology
 
-Single-page React explainer for the agentic-fleet video methodology: Odin/pi orchestrates harness agents in Herdr panes, routes models through OmniRoute, shares memory through Hindsight, and verifies browser work with Cua.
+The visual manifesto and interactive companion to Fernando Ramos and Agentic Engineering's point of view on engineering with autonomous AI fleets.
 
-## Stack
+**Live:** <https://agentic.fernandoramos.work>
 
-- Vite + React + TypeScript
-- Tailwind via `@tailwindcss/vite`
-- shadcn/ui conventions hand-rolled for the few needed primitives: Card, Tabs-shaped sectioning, and CodeBlock
-- Bun package manager
+## Thesis
 
-TanStack Router is intentionally skipped: this is one page with hash anchors, so a router would add code without buying navigation.
+Agents should be observable, directly addressable, autonomous within clear boundaries, continuous across context windows, and accountable to evidence. The page combines an editorial manifesto with a deterministic mission-control simulation suitable for the accompanying YouTube recording.
 
-## Run
+## Experience
+
+- Six operating laws for agentic engineering
+- Deterministic, pauseable fleet simulation
+- Mission lifecycle from intent through verified integration
+- Human-review workflow with Odin's Zed integration
+- Architecture covering Odin, Herdr, OmniRoute, Hindsight, Cua, and Zed
+- Responsive, keyboard-accessible UI with reduced-motion behavior
+- `motion-anything` WebGL `strands` hero background, with Apache-2.0 attribution in `public/motion/`
+- shadcn/ui source components using semantic design tokens
+
+## Development
 
 ```bash
 bun install
-bun run test:content
-bun run build
-bun dev
+bun run check
+bun run preview
 ```
 
-## Accuracy notes
+The project remains a client-side Vite/React application because the experience requires no application server. Cloudflare Workers Static Assets provides the edge runtime, SPA fallback, TLS, and custom domain without introducing a Node.js server.
 
-- Herdr snippets use the verified Herdr 0.7.1 object model: `workspace -> tab -> pane`, with colon ids like `w1:p1`.
-- Correct pane verbs shown: `herdr pane run`, `herdr pane send-text`, `herdr pane send-keys`, `herdr pane read`, `herdr wait output`, and `herdr wait agent-status`.
-- Herdr protocol details are not duplicated here; keep the canonical text in Odin/pi's `herdr-protocol` skill.
+## Deployment
+
+```bash
+bun run deploy
+```
+
+`wrangler.jsonc` targets the personal Cloudflare account and provisions `agentic.fernandoramos.work` as a Worker custom domain. Wrangler authentication and permission to publish to the `fernandoramos.work` zone are required.
+
+## Source material
+
+The editorial strategy and design contract live in:
+
+- `docs/CONTENT-STRATEGY.md`
+- `docs/DESIGN-SYSTEM.md`
+- `docs/DEPLOYMENT.md`

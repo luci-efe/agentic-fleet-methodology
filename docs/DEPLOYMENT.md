@@ -4,7 +4,7 @@
 
 Deploy the existing app as an **assets-only Cloudflare Worker** named
 `agentic-fleet-methodology`, serving Vite's `dist/` directory. Publish it at
-**`methodology.fernandoramos.work`** in the personal Cloudflare account.
+**`agentic.fernandoramos.work`** in the personal Cloudflare account. The shorter name is more memorable on video, expresses the broader point of view rather than one implementation artifact, and leaves room for the site to grow beyond this first methodology page.
 
 This repository is a static Vite + React SPA: it has no TanStack Start,
 server routes, secrets, or data bindings. A Worker with Static Assets is the
@@ -69,10 +69,10 @@ from a developer machine; do not put account tokens in the repository.
    (for example `/favicon.svg`) returns successfully.
 3. In the personal Cloudflare account, open **Workers & Pages** →
    `agentic-fleet-methodology` → **Settings** → **Domains & Routes**, then add
-   the custom domain `methodology.fernandoramos.work`.
+   the custom domain `agentic.fernandoramos.work`.
 4. Let Cloudflare create and proxy the DNS record and provision the TLS
    certificate. Do not create a duplicate DNS record manually.
-5. Verify `https://methodology.fernandoramos.work` and a deep-link URL before
+5. Verify `https://agentic.fernandoramos.work` and a deep-link URL before
    announcing it. Roll back by removing the custom-domain association; the
    `workers.dev` deployment remains available for diagnosis.
 

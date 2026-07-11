@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agentic-fleet-methodology",
+  "compatibility_date": "2026-07-10",
+  "account_id": "4105f6b01897184bf93014d65f1a60f7",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "pattern": "agentic.fernandoramos.work",
+      "custom_domain": true
+    }
+  ]
+}
