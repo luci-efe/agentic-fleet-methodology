@@ -9,7 +9,8 @@ const mustInclude = [
   'Context must continue', 'Plural intelligence', 'Human sovereignty',
   'Herdr', 'Odin', 'OmniRoute', 'Hindsight', 'Cua', 'Zed',
   'Claude Code', 'Codex', 'Hermes', 'OMP', '/fleet-review',
-  'deterministic simulation', 'Not vibe coding', 'Agentic Engineering',
+  'Vibe coding', 'Living operating model', 'Agentic Engineering',
+  'fernando@agenticengineering.agency',
 ]
 const missing = mustInclude.filter((text) => !app.includes(text))
 const requiredAccessibility = ['prefers-reduced-motion', ':focus-visible']
