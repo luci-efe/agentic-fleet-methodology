@@ -35,13 +35,14 @@ function MotionLayer() {
 function LivingSystem() {
   const [focus, setFocus] = useState(0)
   return <div className="system-map" aria-label="Interactive agentic engineering operating model">
-    <div className="map-top"><span>Living operating model</span><span>select a principle</span></div>
-    <div className="map-stage">
-      <svg viewBox="0 0 800 430" aria-hidden="true"><path d="M400 95 L160 285 L290 345 L510 345 L640 285 Z"/><path d="M160 285 L510 345 M640 285 L290 345 M290 345 L400 95 M510 345 L400 95"/></svg>
-      <div className="map-node human"><small>Human</small><strong>Direction + judgment</strong></div>
-      {['Claude Code','Codex','Hermes','OMP'].map((name,index)=><button key={name} className={`map-node worker n${index+1}`} onClick={()=>setFocus(index)}><small>{name}</small><strong>{['Explore','Build','Review','Verify'][index]}</strong></button>)}
-      <div className="map-node odin"><small>Odin</small><strong>Visible coordination</strong></div>
+    <div className="map-top"><span>Living operating model</span><span>select any worker</span></div>
+    <div className="control-chain">
+      <div className="chain-node"><small>Human</small><strong>Direction · judgment · acceptance</strong></div><span className="chain-arrow">↓</span>
+      <div className="chain-node odin"><small>Odin</small><strong>Frame · dispatch · monitor · recover</strong></div>
     </div>
+    <div className="peer-label"><span>direct peer channel</span><i /></div>
+    <div className="worker-grid">{['Claude Code','Codex','Hermes','OMP'].map((name,index)=><button key={name} data-active={focus===index} onClick={()=>setFocus(index)}><small>{name}</small><strong>{['Explore','Build','Review','Verify'][index]}</strong><span>{focus===index?'inspecting':'available'}</span></button>)}</div>
+    <div className="foundation"><span>HERDR <small>visible terminals</small></span><span>HINDSIGHT <small>memory</small></span><span>CUA <small>browser proof</small></span><span>ZED <small>human review</small></span></div>
     <div className="map-explainer"><span>{String(focus+1).padStart(2,'0')}</span><div><strong>{laws[focus][0]}</strong><p>{laws[focus][2]}</p></div></div>
   </div>
 }
@@ -68,7 +69,7 @@ function App() {
 
     <section className="closing"><Workflow/><span>AN INVITATION</span><h2>Make the work visible.<br/>Then scale the intelligence.</h2><p>Adopt the methodology. Challenge it. Improve it. Build autonomous systems that make engineers more capable—not less accountable.</p><div className="actions"><Button size="lg" render={<a href="https://github.com/luci-efe/odin" target="_blank" rel="noreferrer" />}>Explore Odin <ArrowUpRight data-icon="inline-end" /></Button><Button size="lg" variant="outline" render={<a href="mailto:fernando@agenticengineering.agency" />}>fernando@agenticengineering.agency</Button></div></section>
 
-    <footer><a className="brand" href="#top"><b>AE</b><span>Agentic Engineering</span></a><p>A methodology by Fernando Ramos.</p><div><a href="https://github.com/luci-efe/odin">GitHub</a><a href="mailto:fernando@agenticengineering.agency">Contact</a></div></footer>
+    <footer><div className="footer-lead"><a className="brand" href="#top"><b>AE</b><span>Agentic Engineering</span></a><p>Make the work visible.<br/>Then scale the intelligence.</p></div><div className="footer-nav"><span>Explore</span><a href="#point-of-view">Point of view</a><a href="#method">Mission loop</a><a href="#system">Living system</a></div><div className="footer-nav"><span>Connect</span><a href="https://github.com/luci-efe/odin">Odin on GitHub</a><a href="mailto:fernando@agenticengineering.agency">fernando@agenticengineering.agency</a><small>© 2026 Fernando Ramos</small></div></footer>
   </main>
 }
 export default App
